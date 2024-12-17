@@ -1,12 +1,15 @@
 <?php
 
 use App\Http\Controllers\Api\v1\ServiceController;
-use App\Http\Controllers\Api\WalletController;
+use App\Http\Controllers\WalletController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TipController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\TopUpController;
+use App\Http\Controllers\Api\PaymentMethodController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,8 +17,8 @@ Route::get('/', function () {
 
 Route::get('/csrftoken', function() {return csrf_token(); });
 
-Route::post('/user/register', [AuthController::class, 'register'])->name('register');
-Route::post('/user/login', [AuthController::class, 'login'])->name('login');
+Route::post('user/register', [AuthController::class, 'register'])->name('register');
+Route::post('user/login', [AuthController::class, 'login'])->name('login');
 
 Route::post('is-email-exist', [UserController::class, 'isEmailExist']);
 
@@ -40,4 +43,7 @@ Route::group(['middleware' => ['auth.jwt']], function() {
     Route::put('users', [UserController::class, 'update']);
 
     Route::get('wallets', [WalletController::class, 'index']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::post('top_ups', [TopUpController::class, 'store']);
+    Route::get('payment_methods', [PaymentMethodController::class, 'index']);
 });

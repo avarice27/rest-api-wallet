@@ -11,11 +11,10 @@ class PaymentMethodController extends Controller
     public function index()
     {
         $banks = PaymentMethod::where('status', 'active')
-                            ->whereNotIn('code', ['bwa'])
+                            ->where('code' , '!=', 'bwa')
                             ->get()
                             ->map(function ($item) {
-                                $item->thumbnail = $item->thumbnail ? url('storage/'.$item->thumbnail) : "";
-                                $item->time = '50 Min';
+                                $item->thumbnail = $item->thumbnail ? url('banks/'.$item->thumbnail) : "";
                                 return $item;
                             });
 

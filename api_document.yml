@@ -223,10 +223,10 @@ components:
       properties:
         name:
           type: string
-          example: "Ardimas"
+          example: "Rafi"
         email:
           type: string
-          example: "ardimas@gmail.com"
+          example: "rafi@gmail.com"
         nim:
           type: string
           nullable: true
@@ -234,13 +234,10 @@ components:
         password:
           type: string
           example: "tester123"
-        password_confirmation:
-          type: string
-          example: "tester123"
         role_id:
           type: integer
           description: "Took foreign key to role entities"
-          example: "1"
+          example: "2"
     userLoginForm:
       type: object
       properties:

@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service_prices', function (Blueprint $table) {
+        Schema::create('transfer_histories', function (Blueprint $table) {
             $table->id();
-            $table->integer('price');
+            $table->foreignUuid('sender_id')->constrained('users', 'uuid');
+            $table->foreignUuid('receiver_id')->constrained('users', 'uuid');
+            $table->string('transation_code');
             $table->timestamps();
         });
     }
@@ -23,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service_prices');
+        Schema::dropIfExists('transfer_histories');
     }
 };

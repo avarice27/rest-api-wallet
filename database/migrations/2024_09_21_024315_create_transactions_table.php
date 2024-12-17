@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->uuid()->primary();
             // $table->foreignUuid('user_id')->constrained('users', 'uuid');
-            $table->foreignUuid('order_status_id')->constrained('order_status', 'uuid');
+            // $table->foreignUuid('order_status_id')->constrained('order_status', 'uuid');
             $table->foreignId('payment_method_id')->constrained('payment_methods', 'id');
             $table->string('transaction_code');
             $table->float('total_amount', 10, 2);

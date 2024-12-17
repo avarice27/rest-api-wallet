@@ -44,10 +44,10 @@ class ServiceController extends Controller
             ], 422);
         }
 
-        // get current user
+        // get current user SOLVED
         $user = auth('api')->user();
 
-        if ($request->user_id != $user->id) {
+        if ($request->user_id != $user->uuid) {
             return response()->json([
                 'error' => true,
                 'data' => [
@@ -61,8 +61,8 @@ class ServiceController extends Controller
 
             $orderId = Str::uuid()->toString();
             $grossAmount = ServicePrice::where('role_id', $user->role_id)
-                ->where('service_id', $request->service_id)
-                ->get('price')->first();
+                ->where('service_id',  $request->service_id)
+                ->first();
 
             $transaction_details = [
                 'order_id' => $orderId,

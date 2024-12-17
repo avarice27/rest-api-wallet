@@ -20,45 +20,43 @@ class AuthController extends Controller
 {
     //
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'email'     => 'required|email',
             'password'  => 'required'
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'data' => [
-                    'message' => $validator->messages()->first(),
-                ]
-            ], 422);
+            return response()->json(
+                [
+                    'error' =>  $validator->messages()->first()
+                ],
+                400
+            );
         }
 
         $credentials = $request->only('email', 'password');
-        $token = auth('api')->attempt($credentials);
+        $token =
+            JWTAuth::attempt($credentials);
 
         // authentication failed
         if (!$token) {
             return response()->json([
-                'error' => true,
-                'data' => [
-                    'message' => 'Incorrect email or password, try again.'
-                ]
+                'message' => 'Incorrect email or password, try again.'
             ], 401);
         }
 
+        $userResponse = getUser($request->email);
+        $userResponse->token = $token;
+        $userResponse->token_expires_in = JWTAuth::factory()->getTTL() * 60;
+        $userResponse->token_type = 'bearer';
         // success authentication
-        return response()->json([
-            'error' => false,
-            'data' => [
-                'message' => "Token generated successfully.",
-                'token' => $token
-            ]
-        ], 200);
+        return response()->json($userResponse, 200);
     }
 
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $data = $request->all();
         $validator = Validator::make($request->all(), [
             'name' => 'required',
@@ -66,7 +64,7 @@ class AuthController extends Controller
             'password' => 'required|string|min:6',
             'role_id' => 'required|numeric',
             'pin' => 'required|digits:6',
-            "nim" => 'digits:10|numeric',
+            "nim" => 'nullable|digits:10|numeric',
         ]);
 
         if ($validator->fails()) {
@@ -92,7 +90,7 @@ class AuthController extends Controller
         try {
             $profilePicture = null;
             if ($request->profile_picture) {
-               $profilePicture = uploadBase64Image($request->profile_picture);
+                $profilePicture = uploadBase64Image($request->profile_picture);
             }
 
             $ktp = null;
@@ -100,53 +98,53 @@ class AuthController extends Controller
                 $ktp = uploadBase64Image($request->ktp);
             }
             $role_id = null;
-            If($request->role_id){
+            if ($request->role_id) {
                 $role_id = $request->role_id;
-                }
+            }
 
 
-        $uuid = Str::uuid();
-        $user = User::create([
-            'uuid' => $uuid,
-            'nim' => $request->nim,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
-            'role_id' => $role_id,
-            'profile_picture' => $profilePicture,
-            'ktp' => $ktp,
-            'verified' => ($ktp) ? true : false
-        ]);
+            $uuid = Str::uuid();
+            $user = User::create([
+                'uuid' => $uuid,
+                'nim' => $request->nim,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'role_id' => $role_id,
+                'profile_picture' => $profilePicture,
+                'ktp' => $ktp,
+                'verified' => ($ktp) ? true : false
+            ]);
 
-        // success condition
-        // if ($user) {
-        //     return response()->json([
-        //         'error' => false,
-        //         'data' => [
-        //             'message' => "Success create user."
-        //         ]
-        //     ], 200);
-        // }
+            // success condition
+            // if ($user) {
+            //     return response()->json([
+            //         'error' => false,
+            //         'data' => [
+            //             'message' => "Success create user."
+            //         ]
+            //     ], 200);
+            // }
 
-        // // false condition
-        // return response()->json([
-        //     'error' => true,
-        //     'data' => [
-        //         'message' => "Failed create user, try again."
-        //     ]
-        // ], 302);
+            // // false condition
+            // return response()->json([
+            //     'error' => true,
+            //     'data' => [
+            //         'message' => "Failed create user, try again."
+            //     ]
+            // ], 302);
 
-        $cardNumber = $this->generateCardNumber(16);
+            $cardNumber = $this->generateCardNumber(16);
 
-        Wallet::create([
-            'user_id' => $user->uuid,
-            'balance' => 0,
-            'pin' => $request->pin,
-            'card_number' => $cardNumber
-        ]);
+            Wallet::create([
+                'user_id' => $user->uuid,
+                'balance' => 0,
+                'pin' => $request->pin,
+                'card_number' => $cardNumber
+            ]);
 
-        DB::commit();
-        $token = JWTAuth::attempt(['email' => $request->email, 'password' => $request->password]);
+            DB::commit();
+            $token = JWTAuth::attempt(['email' => $request->email, 'password' => $request->password]);
 
             $userResponse = getUser($user->uuid);
             $userResponse->token = $token;
@@ -160,7 +158,8 @@ class AuthController extends Controller
         }
     }
 
-    public function myprofile() {
+    public function myprofile()
+    {
         $user = auth('api')->user();
         return response()->json([
             'error' => false,
@@ -176,7 +175,8 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function logout() {
+    public function logout()
+    {
         $removeToken = JWTAuth::invalidate(JWTAuth::getToken());
         if ($removeToken) {
             return response()->json([
@@ -188,22 +188,24 @@ class AuthController extends Controller
         }
     }
 
-        public function refresh() {
-            return $this->respondWithToken(auth()->refresh());
-        }
+    public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());
+    }
 
-        protected function respondWithToken($token) {
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60
-            ]);
-        }
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => auth()->factory()->getTTL() * 60
+        ]);
+    }
 
-        private function generateCardNumber($length)
+    private function generateCardNumber($length)
     {
         $result = '';
-        for($i = 0; $i < $length; $i++) {
+        for ($i = 0; $i < $length; $i++) {
             $result .= mt_rand(0, 9);
         }
 

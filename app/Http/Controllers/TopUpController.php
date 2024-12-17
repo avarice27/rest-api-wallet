@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-use App\Models\TransactionType;
+// use App\Models\TransactionType;
 use App\Models\PaymentMethod;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -32,7 +32,7 @@ class TopUpController extends Controller
             return response()->json(['message' => 'Your PIN is wrong'], 400);
         }
 
-        $transactionType = TransactionType::where('code', 'top_up')->first();
+        // $transactionType = TransactionType::where('code', 'top_up')->first();
         $paymentMethod = PaymentMethod::where('code', $request->payment_method_code)->first();
 
         DB::beginTransaction();
@@ -41,11 +41,11 @@ class TopUpController extends Controller
             $transaction = Transaction::create([
                 'user_id' => auth()->user()->id,
                 'payment_method_id' => $paymentMethod->id,
-                'transaction_type_id' => $transactionType->id,
+                // 'transaction_type_id' => $transactionType->id,
                 'amount' => $request->amount,
                 'transaction_code' => strtoupper(Str::random(10)),
                 'description' => 'Top Up via '.$paymentMethod->name,
-                'status' => Transaction::STATUS_PENDING
+                'status' => 'pending',
             ]);
 
             $params = $this->buildMidtransParameter([
