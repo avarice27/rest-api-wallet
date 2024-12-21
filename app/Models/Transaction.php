@@ -14,6 +14,8 @@ class Transaction extends Model
         'total_amount',
         'status',
         'user_id',
+        'payment_method_id',
+        'transaction_code',
         'service_id',
         'created_at',
         'updated_at'

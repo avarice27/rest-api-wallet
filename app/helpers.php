@@ -23,7 +23,7 @@ function getUser($param)
 
 function pinChecker($pin)
 {
-    $userId = auth()->user()->id;
+    $userId = auth()->user()->uuid;
     $wallet = Wallet::where('user_id', $userId)->first();
 
     if (!$wallet) {

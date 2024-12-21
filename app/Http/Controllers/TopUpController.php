@@ -1,12 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
-// use App\Models\TransactionType;
 use App\Models\PaymentMethod;
+use App\Models\TransactionType;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +15,6 @@ class TopUpController extends Controller
     public function store(Request $request)
     {
         $data = $request->only('amount', 'pin', 'payment_method_code');
-
         $validator = Validator::make($data, [
            'amount' => 'required|integer|min:10000',
            'pin' => 'required|digits:6',
@@ -34,23 +32,26 @@ class TopUpController extends Controller
 
         // $transactionType = TransactionType::where('code', 'top_up')->first();
         $paymentMethod = PaymentMethod::where('code', $request->payment_method_code)->first();
-
+// dd($paymentMethod->id);
         DB::beginTransaction();
 
         try {
+            $uuid = Str::uuid();
             $transaction = Transaction::create([
-                'user_id' => auth()->user()->id,
+                'uuid' => $uuid,
                 'payment_method_id' => $paymentMethod->id,
                 // 'transaction_type_id' => $transactionType->id,
-                'amount' => $request->amount,
                 'transaction_code' => strtoupper(Str::random(10)),
-                'description' => 'Top Up via '.$paymentMethod->name,
-                'status' => 'pending',
+                'total_amount' => $request->amount,
+                // 'description' => 'Top Up via '.$paymentMethod->name,
+                'user_id' => auth()->user()->uuid,
+                // 'status' => 'pending',
+                'service_id' => '1',
             ]);
 
             $params = $this->buildMidtransParameter([
                 'transaction_code' => $transaction->transaction_code,
-                'amount' => $transaction->amount,
+                'amount' => $transaction->total_amount,
                 'payment_method' => $paymentMethod->code
             ]);
 

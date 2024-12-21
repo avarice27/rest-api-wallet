@@ -14,25 +14,45 @@ class PaymentMethodSeeder extends Seeder
     {
         $paymentMethods = [
             [
-                'name' => 'Bank BWA',
+                'name' => 'BWA',
                 'code' => 'bwa',
                 'status' => 'active',
+                'thumbnail' => 'ocbc.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'name' => 'Bank BNI',
+                'name' => 'BNI',
                 'code' => 'bni_va',
                 'status' => 'active',
+                'thumbnail' => 'bni.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'name' => 'Bank BCA',
+                'name' => 'BCA',
                 'code' => 'bca_va',
                 'status' => 'active',
+                'thumbnail' => 'bca.png',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
-                'name' => 'Bank BRI',
+                'name' => 'BRI',
                 'code' => 'bri_va',
                 'status' => 'active',
-            ]
+                'thumbnail' => 'bri.png',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'Mandiri',
+                'code' => 'mandiri_va',
+                'status' => 'active',
+                'thumbnail' => 'mandiri.png',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         foreach ($paymentMethods as $method) {

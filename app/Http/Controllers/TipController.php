@@ -12,10 +12,9 @@ class TipController extends Controller
         $limit = $request->query('limit') !== null ? $request->query('limit') : 10;
 
         $tips = Tip::select('id', 'title', 'url', 'thumbnail')->paginate($limit);
-
+        // dd($tips);
         $tips->getCollection()->transform(function ($item) {
-            $item->thumbnail = $item->thumbnail ?
-                url('storage/'.$item->thumbnail) : "";
+            $item->thumbnail = $item->thumbnail ? url($item->thumbnail) : "";
             return $item;
         });
 

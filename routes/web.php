@@ -7,8 +7,8 @@ use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TipController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\TopUpController;
-use App\Http\Controllers\Api\PaymentMethodController;
+use App\Http\Controllers\TopUpController;
+use App\Http\Controllers\PaymentMethodController;
 
 
 Route::get('/', function () {
@@ -36,7 +36,7 @@ Route::group(['middleware' => ['auth.jwt']], function() {
 
     Route::get('/transaction', [TransactionController::class, 'getAllTransactions'])->name('getAllTransactions');
 
-    Route::get('tips', [TipController::class, 'index']);
+    Route::get('/tips', [TipController::class, 'index']);
 
     Route::get('users', [UserController::class, 'show']);
     Route::get('users/{username}', [UserController::class, 'getUserByUsername']);
