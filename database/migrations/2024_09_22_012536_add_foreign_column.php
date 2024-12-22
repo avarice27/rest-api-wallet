@@ -25,9 +25,9 @@ return new class extends Migration
             $table->foreignId('service_id')->nullable()->constrained('services', 'id');
         });
 
-        Schema::table('order_status', function(Blueprint $table) {
-            $table->foreignUuid('transaction_id')->constrained('transactions', 'uuid');
-        });
+        // Schema::table('order_status', function(Blueprint $table) {
+        //     $table->foreignUuid('transaction_id')->constrained('transactions', 'uuid');
+        // });
     }
 
     /**

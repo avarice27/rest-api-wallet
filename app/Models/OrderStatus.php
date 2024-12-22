@@ -4,19 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PaymentMethod extends Model
+class OrderStatus extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
-    protected $table = 'payment_methods';
+    protected $table = 'order_status';
 
     protected $fillable = [
-        'name',
-        'code',
+        'uuid',
         'status',
-        'thumbnail'
+        'created_at',
+        'updated_at'
     ];
 
     protected $casts = [
@@ -26,6 +25,6 @@ class PaymentMethod extends Model
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class);
+        return $this->hasOne(Transaction::class, 'uuid', 'uuid');
     }
 }

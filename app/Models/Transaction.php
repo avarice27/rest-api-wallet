@@ -21,12 +21,21 @@ class Transaction extends Model
         'updated_at'
     ];
 
-    public function paymentMethod()
+    public function payment_method()
     {
         return $this->belongsTo(PaymentMethod::class);
     }
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function order_status()
+    {
+        return $this->belongsTo(OrderStatus::class, 'uuid', 'uuid');
     }
 }

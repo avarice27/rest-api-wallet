@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\Service;
 use App\Models\ServicePrice;
 use App\Models\Transaction;
@@ -20,7 +22,7 @@ class ServiceController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'service_id' => 'required|integer',
-            'bank' => 'required|in:bni,bca'
+            'bank' => 'required|in:bni,bca,bri'
         ]);
 
         if ($validator->fails()) {
@@ -44,7 +46,7 @@ class ServiceController extends Controller
             ], 422);
         }
 
-        // get current user SOLVED
+        // get current user 
         $user = auth('api')->user();
 
         if ($request->user_id != $user->uuid) {
@@ -89,14 +91,34 @@ class ServiceController extends Controller
             //     throw new Exception("Simulated API failure");
             // }
 
-            Transaction::insert([
+            // when payment methods not found
+            $paymentsMethods = PaymentMethod::whereCode($request->bank)->first();
+
+            if (!$paymentsMethods) {
+                return response()->json([
+                    'error' => true,
+                    'data' => [
+                        'message' => 'Bank ' . $request->bank . ' not found'
+                    ]
+                ]);
+            }
+
+            $trasanctionInsert = Transaction::insert([
                 'uuid' => $orderId,
+                'payment_method_id' => $paymentsMethods->id,
                 'total_amount' => $grossAmount->price,
                 'user_id' => $request->user_id,
                 'service_id' => $request->service_id,
                 'created_at' => now()
             ]);
 
+            if($trasanctionInsert) {
+                OrderStatus::insert([
+                    'uuid' => $orderId,
+                    'created_at' => now()
+                ]);
+            }
+            
             DB::commit();
 
             return response()->json([
