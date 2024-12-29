@@ -144,4 +144,25 @@ class ServiceController extends Controller
         }
     }
 
+    public function getServicesWithPrices() {
+        $servicesPrices = ServicePrice::get();
+        
+        if($servicesPrices->isNotEmpty()) {
+            return response()->json([
+                'error' => false,
+                'data' => [
+                    'message' => 'Success get all services',
+                    $servicesPrices->map(function($v) {
+                        return [
+                            'name' => $v->service->name,
+                            'price' => $v->price,
+                            'role' => $v->role->name,
+                            'last_updated' => $v->updated_at
+                        ];
+                    })
+                ]
+            ]);
+        }
+    }
+
 }

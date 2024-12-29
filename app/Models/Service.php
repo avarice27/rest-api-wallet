@@ -9,7 +9,13 @@ class Service extends Model
 {
     use HasFactory;
 
+    protected $table = 'services';
+
     public function transactions(){
         return $this->hasMany(Transaction::class);
+    }
+
+    public function service_price() {
+        return $this->hasMany(ServicePrice::class);
     }
 }

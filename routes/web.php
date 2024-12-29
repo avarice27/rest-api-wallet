@@ -17,17 +17,21 @@ Route::get('/', function () {
 
 Route::get('/csrftoken', function() {return csrf_token(); });
 
+// No need for JWT tokens
+
 Route::post('user/register', [AuthController::class, 'register'])->name('register');
 Route::post('user/login', [AuthController::class, 'login'])->name('login');
 
+Route::get('service', [ServiceController::class, 'getServicesWithPrices']);
+
 Route::post('is-email-exist', [UserController::class, 'isEmailExist']);
 
-
-
+// Need JWT token to use
 Route::group(['middleware' => ['auth.jwt', 'auth.admin']], function() {
     Route::get('/user', [UserController::class, 'getUsers'])->name('getUsers');
 });
 
+// Need JWT token to use
 Route::group(['middleware' => ['auth.jwt']], function() {
     Route::get('/user/myprofile', [AuthController::class, 'myprofile']);
     Route::post('/user/logout', [AuthController::class, 'logout']);
