@@ -21,7 +21,7 @@ class Transaction extends Model
         'updated_at'
     ];
 
-    public function paymentMethod()
+    public function payment_method()
     {
         return $this->belongsTo(PaymentMethod::class);
     }

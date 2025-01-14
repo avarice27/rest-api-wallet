@@ -23,7 +23,7 @@ class PaymentMethodSeeder extends Seeder
             ],
             [
                 'name' => 'BNI',
-                'code' => 'bni_va',
+                'code' => 'bni',
                 'status' => 'active',
                 'thumbnail' => 'bni.png',
                 'created_at' => now(),
@@ -31,7 +31,7 @@ class PaymentMethodSeeder extends Seeder
             ],
             [
                 'name' => 'BCA',
-                'code' => 'bca_va',
+                'code' => 'bca',
                 'status' => 'active',
                 'thumbnail' => 'bca.png',
                 'created_at' => now(),
@@ -39,7 +39,7 @@ class PaymentMethodSeeder extends Seeder
             ],
             [
                 'name' => 'BRI',
-                'code' => 'bri_va',
+                'code' => 'bri',
                 'status' => 'active',
                 'thumbnail' => 'bri.png',
                 'created_at' => now(),
@@ -47,7 +47,7 @@ class PaymentMethodSeeder extends Seeder
             ],
             [
                 'name' => 'Mandiri',
-                'code' => 'mandiri_va',
+                'code' => 'mandiri',
                 'status' => 'active',
                 'thumbnail' => 'mandiri.png',
                 'created_at' => now(),

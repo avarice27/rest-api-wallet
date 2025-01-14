@@ -6,20 +6,12 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use Tymon\JWTAuth\Contracts\Providers\Auth;
 use Tymon\JWTAuth\Facades\JWTAuth;
-use Tymon\JWTAuth\Exceptions\JWTException;
 use App\Models\Wallet;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Melihovv\Base64ImageDecoder\Base64ImageDecoder;
-
-
 
 class AuthController extends Controller
 {
-    //
-
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -51,6 +43,7 @@ class AuthController extends Controller
         $userResponse->token = $token;
         $userResponse->token_expires_in = JWTAuth::factory()->getTTL() * 60;
         $userResponse->token_type = 'bearer';
+        
         // success authentication
         return response()->json($userResponse, 200);
     }
@@ -75,6 +68,7 @@ class AuthController extends Controller
                 ]
             ], 422);
         }
+
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->messages()], 400);
         }
@@ -101,7 +95,6 @@ class AuthController extends Controller
             if ($request->role_id) {
                 $role_id = $request->role_id;
             }
-
 
             $uuid = Str::uuid();
             $user = User::create([
