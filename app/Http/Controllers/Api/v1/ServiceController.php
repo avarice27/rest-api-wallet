@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api\v1;
 
 use App\Http\Controllers\Controller;
+use App\Models\OrderStatus;
+use App\Models\PaymentMethod;
 use App\Models\Service;
 use App\Models\ServicePrice;
 use App\Models\Transaction;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Exception;
-use Midtrans;
-
 
 class ServiceController extends Controller
 {
@@ -20,7 +21,8 @@ class ServiceController extends Controller
         $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'service_id' => 'required|integer',
-            'bank' => 'required|in:bni,bca'
+            'pin' => 'required|digits:6',
+            'bank' => 'required|in:bni_va,bca_va,bri_va'
         ]);
 
         if ($validator->fails()) {
@@ -32,19 +34,7 @@ class ServiceController extends Controller
             ], 422);
         }
 
-        // get services
-        $services = Service::where('id', $request->service_id)->first();
-
-        if (!$services) {
-            return response()->json([
-                'error' => true,
-                'data' => [
-                    'message' => "Service not found, https://kegiatan.upnvj.ac.id/."
-                ]
-            ], 422);
-        }
-
-        // get current user SOLVED
+        // get current user
         $user = auth('api')->user();
 
         if ($request->user_id != $user->uuid) {
@@ -56,58 +46,92 @@ class ServiceController extends Controller
             ], 401);
         }
 
+        // get services
+        $service = Service::find($request->service_id);
+
+        if (!$service) {
+            return response()->json([
+                'error' => true,
+                'data' => [
+                    'message' => "Service not found."
+                ]
+            ], 422);
+        }
+
+        // Check PIN
+        $pinChecker = pinChecker($request->pin);
+        if (!$pinChecker) {
+            return response()->json([
+                'error' => true,
+                'data' => [
+                    'message' => 'Your PIN is wrong'
+                ]
+            ], 400);
+        }
+
+        // Get user wallet and service price
+        $userWallet = Wallet::where('user_id', $user->uuid)->first();
+        $servicePrice = ServicePrice::where('role_id', $user->role_id)
+            ->where('service_id', $request->service_id)
+            ->first();
+
+        if (!$servicePrice) {
+            return response()->json([
+                'error' => true,
+                'data' => [
+                    'message' => 'Service price not found for your role.'
+                ]
+            ], 404);
+        }
+
+        // Check wallet balance
+        if ($userWallet->balance < $servicePrice->price) {
+            return response()->json([
+                'error' => true,
+                'data' => [
+                    'message' => 'Insufficient wallet balance.'
+                ]
+            ], 400);
+        }
+
         try {
             DB::beginTransaction();
 
             $orderId = Str::uuid()->toString();
-            $grossAmount = ServicePrice::where('role_id', $user->role_id)
-                ->where('service_id',  $request->service_id)
-                ->first();
+            $paymentMethod = PaymentMethod::where('code', 'bdm')->first();
 
-            $transaction_details = [
-                'order_id' => $orderId,
-                'gross_amount' => $grossAmount->price
-            ];
-
-            $customer_details = [
-                'email'            => $user->email,
-            ];
-
-            $transaction_data = [
-                'payment_type' => 'bank_transfer',
-                'transaction_details' => $transaction_details,
-                'bank_transfer' => [
-                    'bank' => $request->bank
-                ],
-                'customer_details' => $customer_details
-            ];
-
-            $response = \Midtrans\CoreApi::charge($transaction_data);
-
-            // NEED EXCEPTION! MIDTRANS DOESN'T HAS AN FAILED METHOD
-            // if ($response->failed()) {
-            //     throw new Exception("Simulated API failure");
-            // }
-
-            Transaction::insert([
+            // Create transaction
+            $transaction = Transaction::create([
                 'uuid' => $orderId,
-                'total_amount' => $grossAmount->price,
+                'payment_method_id' => $paymentMethod->id,
+                'total_amount' => $servicePrice->price,
                 'user_id' => $request->user_id,
                 'service_id' => $request->service_id,
+                'transaction_code' => strtoupper(Str::random(10)),
+                'description' => 'Service Purchase: ' . $service->name,
+                'status' => 'success',
                 'created_at' => now()
             ]);
+
+            // Create order status
+            OrderStatus::create([
+                'uuid' => $orderId,
+                'created_at' => now(),
+            ]);
+
+            // Deduct from wallet
+            $userWallet->decrement('balance', $servicePrice->price);
 
             DB::commit();
 
             return response()->json([
                 'error' => false,
                 'data' => [
-                    'message' => $response->status_message,
-                    'order_id' => $response->order_id,
-                    'gross_amount' => (int)$response->gross_amount,
-                    'transaction_status' => $response->transaction_status,
-                    'va_number' => $response->va_numbers[0]->va_number,
-                    'bank' => $response->va_numbers[0]->bank
+                    'message' => 'Service purchase successful',
+                    'order_id' => $orderId,
+                    'amount' => $servicePrice->price,
+                    'service_name' => $service->name,
+                    'transaction_status' => 'success'
                 ]
             ], 201);
 
@@ -122,4 +146,32 @@ class ServiceController extends Controller
         }
     }
 
+    public function getServicesWithPrices()
+    {
+        $servicesPrices = ServicePrice::get();
+
+        if($servicesPrices->isNotEmpty()) {
+            return response()->json([
+                'error' => false,
+                'data' => [
+                    'message' => 'Success get all services',
+                    'services' => $servicesPrices->map(function($v) {
+                        return [
+                            'name' => $v->service->name,
+                            'price' => $v->price,
+                            'role' => $v->role->name,
+                            'last_updated' => $v->updated_at
+                        ];
+                    })
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'error' => true,
+            'data' => [
+                'message' => 'No services found'
+            ]
+        ], 404);
+    }
 }

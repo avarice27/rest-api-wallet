@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use DB;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-class OrderStatus extends Seeder
+class OrderStatusSeeder extends Seeder
 {
    public function run(): void
    {

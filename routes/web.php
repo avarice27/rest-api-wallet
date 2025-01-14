@@ -22,7 +22,7 @@ Route::post('user/login', [AuthController::class, 'login'])->name('login');
 
 Route::post('is-email-exist', [UserController::class, 'isEmailExist']);
 
-
+Route::get('service', [ServiceController::class, 'getServicesWithPrices']);
 
 Route::group(['middleware' => ['auth.jwt', 'auth.admin']], function() {
     Route::get('/user', [UserController::class, 'getUsers'])->name('getUsers');
@@ -43,6 +43,7 @@ Route::group(['middleware' => ['auth.jwt']], function() {
     Route::put('users', [UserController::class, 'update']);
 
     Route::get('wallets', [WalletController::class, 'index']);
+    Route::post('wallets', [WalletController::class, 'index']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('top_ups', [TopUpController::class, 'store']);
     Route::get('payment_methods', [PaymentMethodController::class, 'index']);

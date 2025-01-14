@@ -16,7 +16,7 @@ return new class extends Migration
             // $table->foreignUuid('user_id')->constrained('users', 'uuid');
             // $table->foreignUuid('order_status_id')->constrained('order_status', 'uuid');
             $table->foreignId('payment_method_id')->constrained('payment_methods', 'id');
-            $table->string('transaction_code');
+            $table->string('transaction_code')->nullable();
             $table->float('total_amount', 10, 2);
             $table->timestamps();
         });

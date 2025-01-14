@@ -7,7 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class ServicePrice extends Model
 {
-    use HasFactory;
+    protected $table  = 'service_prices';
 
-    protected $table = 'service_prices';
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
 }

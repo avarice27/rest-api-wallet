@@ -37,7 +37,7 @@ class ServicesTableSeeder extends Seeder
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ],
             [
-                'name' => 'Kursus Persiapan TOEFL/ELPT 48 Jam',
+                'name' => 'Kursus Persiapan TOEFL/ELPT',
                 'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
                 'updated_at' => Carbon::now()->format('Y-m-d H:i:s')
             ],

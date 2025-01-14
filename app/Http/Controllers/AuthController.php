@@ -116,23 +116,6 @@ class AuthController extends Controller
                 'verified' => ($ktp) ? true : false
             ]);
 
-            // success condition
-            // if ($user) {
-            //     return response()->json([
-            //         'error' => false,
-            //         'data' => [
-            //             'message' => "Success create user."
-            //         ]
-            //     ], 200);
-            // }
-
-            // // false condition
-            // return response()->json([
-            //     'error' => true,
-            //     'data' => [
-            //         'message' => "Failed create user, try again."
-            //     ]
-            // ], 302);
 
             $cardNumber = $this->generateCardNumber(16);
 
@@ -144,12 +127,12 @@ class AuthController extends Controller
             ]);
 
             DB::commit();
-            $token = JWTAuth::attempt(['email' => $request->email, 'password' => $request->password]);
+            // $token = JWTAuth::attempt(['email' => $request->email, 'password' => $request->password]);
 
             $userResponse = getUser($user->uuid);
-            $userResponse->token = $token;
-            $userResponse->token_expires_in = JWTAuth::factory()->getTTL() * 60;
-            $userResponse->token_type = 'bearer';
+            // $userResponse->token = $token;
+            // $userResponse->token_expires_in = JWTAuth::factory()->getTTL() * 60;
+            // $userResponse->token_type = 'bearer';
 
             return response()->json($userResponse);
         } catch (\Throwable $th) {

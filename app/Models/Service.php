@@ -7,5 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-    use HasFactory;
+    protected $table = 'services';
+
+    public function service_price()
+    {
+        return $this->hasMany(ServicePrice::class);
+    }
+
+    public function transactions() {
+        return $this->hasMany(Transaction::class);
+    }
 }

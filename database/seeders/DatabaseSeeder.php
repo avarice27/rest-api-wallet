@@ -15,7 +15,8 @@ class DatabaseSeeder extends Seeder
         $this -> call([
             RolesTableSeeder::class,
             ServicesTableSeeder::class,
-            ServicePricesTableSeeder::class
+            ServicePricesTableSeeder::class,
+            PaymentMethodSeeder::class,
         ]);
     }
 }
