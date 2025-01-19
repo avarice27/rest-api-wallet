@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use App\Models\Service;
 use App\Models\ServicePrice;
 use App\Models\Transaction;
@@ -24,7 +22,7 @@ class ServiceController extends Controller
             'user_id' => 'required',
             'service_id' => 'required|integer',
             'pin' => 'required|digits:6',
-            'bank' => 'required|in:bni_va,bca_va,bri_va'
+            'payment_method_code' => 'required|in:bni_va,bca_va,bri_va'
         ]);
 
         if ($validator->fails()) {
@@ -87,7 +85,7 @@ class ServiceController extends Controller
         }
 
         // Check wallet balance
-        if ($userWallet->balance < $servicePrice->price) {
+        if ($userWallet->balance < $servicePrice->amount) {
             return response()->json([
                 'error' => true,
                 'data' => [
@@ -100,25 +98,26 @@ class ServiceController extends Controller
             DB::beginTransaction();
 
             $orderId = Str::uuid()->toString();
-            $paymentMethod = PaymentMethod::where('code', 'bdm')->first();
+            $transactionCode = strtoupper(Str::random(10));
+            $paymentMethod = PaymentMethod::where("code","=",$request->payment_method_code)->first();
 
             // Create transaction
             $transaction = Transaction::create([
                 'uuid' => $orderId,
                 'payment_method_id' => $paymentMethod->id,
+                'transaction_code' > $transactionCode,
                 'total_amount' => $servicePrice->price,
                 'user_id' => $request->user_id,
                 'service_id' => $request->service_id,
-                'transaction_code' => strtoupper(Str::random(10)),
-                'description' => 'Service Purchase: ' . $service->name,
-                'status' => 'success',
+                // 'status' => 'success',  // Added status
                 'created_at' => now()
             ]);
 
             // Create order status
-            OrderStatus::create([
+            OrderStatus::create([  // Changed from insert() to create()
                 'uuid' => $orderId,
-                'created_at' => now(),
+                'status' => 'success',  // Changed from pending to success
+                'created_at' => now()
             ]);
 
             // Deduct from wallet

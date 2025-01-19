@@ -9,7 +9,7 @@ use App\Models\TransactionType;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-
+use App\Models\Wallet;
 class TopUpController extends Controller
 {
     public function store(Request $request)
@@ -36,6 +36,7 @@ class TopUpController extends Controller
         DB::beginTransaction();
 
         try {
+            $user = auth()->user();
             $uuid = Str::uuid();
             $transaction = Transaction::create([
                 'uuid' => $uuid,
@@ -43,7 +44,7 @@ class TopUpController extends Controller
                 // 'transaction_type_id' => $transactionType->id,
                 'transaction_code' => strtoupper(Str::random(10)),
                 'total_amount' => $request->amount,
-                // 'description' => 'Top Up via '.$paymentMethod->name,
+                'description' => 'Top Up via '.$paymentMethod->name,
                 'user_id' => auth()->user()->uuid,
                 // 'status' => 'pending',
                 'service_id' => '1',
@@ -56,6 +57,11 @@ class TopUpController extends Controller
             ]);
 
             $midtrans = $this->callMidtrans($params);
+
+            $currentBalance = Wallet::select('pin', 'balance', 'card_number')->where('user_id', $user->uuid)->first();
+
+            Wallet::where('user_id', $user->uuid)
+                ->update(['balance' => $currentBalance->balance += $request->amount]);
 
             DB::commit();
 

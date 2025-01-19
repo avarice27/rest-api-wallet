@@ -14,7 +14,7 @@ class TipController extends Controller
         $tips = Tip::select('id', 'title', 'url', 'thumbnail')->paginate($limit);
         // dd($tips);
         $tips->getCollection()->transform(function ($item) {
-            $item->thumbnail = $item->thumbnail ? url($item->thumbnail) : "";
+            $item->thumbnail = $item->thumbnail ? asset($item->thumbnail) : "";
             return $item;
         });
 
